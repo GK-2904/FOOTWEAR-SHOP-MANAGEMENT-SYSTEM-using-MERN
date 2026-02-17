@@ -1,7 +1,7 @@
 import pool from './db.js';
 import bcrypt from 'bcryptjs';
 
-const INIT_SQL = \`
+const INIT_SQL = `
 -- Footwear Shop Management System - Database Schema
 
 -- Drop tables if they exist
@@ -101,7 +101,7 @@ INSERT INTO admins (username, password) VALUES ('admin', '$2b$10$YourHashedPassw
 INSERT INTO categories (name) VALUES ('Men'), ('Women'), ('Kids');
 
 INSERT INTO brands (name) VALUES ('Nike'), ('Adidas'), ('Puma'), ('Reebok'), ('Bata');
-\`;
+`;
 
 export const initializeDatabase = async () => {
   const client = await pool.connect();
@@ -116,10 +116,10 @@ export const initializeDatabase = async () => {
     // Hash the default admin password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('admin123', salt);
-    
+
     // Replace placeholder in SQL
     const finalSql = INIT_SQL.replace('$2b$10$YourHashedPasswordHere', hashedPassword);
-    
+
     await client.query(finalSql);
     console.log('Database initialized successfully');
   } catch (err) {
