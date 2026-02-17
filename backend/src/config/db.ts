@@ -10,6 +10,7 @@ const pool = new Pool({
       ssl: {
         rejectUnauthorized: false,
       },
+      family: 4,
     }
     : {
       user: process.env.DB_USER,
@@ -17,6 +18,7 @@ const pool = new Pool({
       database: process.env.DB_NAME,
       password: process.env.DB_PASSWORD,
       port: parseInt(process.env.DB_PORT || '5432'),
+      family: 4,
     }),
 });
 
