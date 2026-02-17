@@ -1,5 +1,14 @@
+import dns from 'node:dns';
+// Force IPv4
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (e) {
+  // Ignore if not supported in older node versions, but Render uses 20+
+}
+
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+
 
 dotenv.config();
 
