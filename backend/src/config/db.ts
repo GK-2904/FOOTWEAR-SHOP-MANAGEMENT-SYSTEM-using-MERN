@@ -38,7 +38,7 @@ if (process.env.DATABASE_URL) {
   };
 }
 
-const pool = new Pool(poolConfig);
+const pool = new Pool(poolConfig as any);
 
 export const query = (text: string, params?: any[]) => pool.query(text, params);
 
