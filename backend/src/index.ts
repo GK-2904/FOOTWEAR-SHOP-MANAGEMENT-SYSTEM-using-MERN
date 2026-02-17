@@ -1,5 +1,16 @@
 import dns from 'node:dns';
-dns.setDefaultResultOrder('ipv4first');
+
+// MONKEY PATCH: Force IPv4 for everything
+const originalLookup = dns.lookup;
+(dns as any).lookup = (hostname: string, options: any, callback: any) => {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+  options = options || {};
+  options.family = 4; // FORCE IPv4
+  return originalLookup(hostname, options, callback);
+};
 
 import express from 'express';
 import cors from 'cors';
