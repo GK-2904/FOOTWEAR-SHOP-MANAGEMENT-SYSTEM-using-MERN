@@ -12,33 +12,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-let poolConfig;
-
+// Debug: Check if URL is loaded (Mask the password)
 if (process.env.DATABASE_URL) {
-  const params = new URL(process.env.DATABASE_URL);
-  poolConfig = {
-    user: params.username,
-    password: params.password,
-    host: params.hostname,
-    port: parseInt(params.port),
-    database: params.pathname.split('/')[1],
-    ssl: {
-      rejectUnauthorized: false,
-    },
-    family: 4, // Explicitly force IPv4
-  };
+  console.log('Database URL loaded:', process.env.DATABASE_URL.replace(/:([^:@]+)@/, ':****@'));
 } else {
-  poolConfig = {
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    family: 4,
-  };
+  console.error('DATABASE_URL is missing!');
 }
 
-const pool = new Pool(poolConfig as any);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : undefined,
+});
 
 export const query = (text: string, params?: any[]) => pool.query(text, params);
 
