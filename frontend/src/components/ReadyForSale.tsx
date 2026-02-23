@@ -13,15 +13,11 @@ export function ReadyForSale() {
 
     const loadData = async () => {
         const data = await storageService.getFootwear();
-        const readyStock = data.filter(item => item.isReadyForSale);
+        const readyStock = data.filter(item => {
+            if (!item.expiryDate) return false;
+            return new Date(item.expiryDate) <= new Date();
+        });
         setFootwear(readyStock);
-    };
-
-    const handleUnmark = async (id: string) => {
-        if (confirm('Are you sure you want to remove this item from Ready for Sale?')) {
-            await storageService.updateFootwear(id, { isReadyForSale: false });
-            await loadData();
-        }
     };
 
     return (
@@ -42,7 +38,7 @@ export function ReadyForSale() {
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cost (Pur)</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Selling</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expiry Date</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -73,13 +69,8 @@ export function ReadyForSale() {
                                                 {item.quantity}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-sm">
-                                            <button
-                                                onClick={() => handleUnmark(item.id)}
-                                                className="text-red-600 hover:text-red-800 font-medium"
-                                            >
-                                                Unmark
-                                            </button>
+                                        <td className="px-4 py-3 text-sm text-red-600 font-medium">
+                                            {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : 'N/A'}
                                         </td>
                                     </motion.tr>
                                 ))}

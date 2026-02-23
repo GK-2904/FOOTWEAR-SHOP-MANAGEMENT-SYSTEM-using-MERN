@@ -16,7 +16,8 @@ export interface Footwear {
   quantity: number;
   gstPercent?: number;
   gender?: string;
-  isReadyForSale?: boolean;
+  mfgDate?: string;
+  expiryDate?: string;
   createdAt: string;
   updatedAt: string;
 }

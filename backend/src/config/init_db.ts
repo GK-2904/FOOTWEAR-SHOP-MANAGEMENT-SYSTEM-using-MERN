@@ -52,7 +52,8 @@ CREATE TABLE products (
     selling_price DECIMAL(10, 2) NOT NULL,
     gst_percent DECIMAL(5, 2) DEFAULT 0,
     gender VARCHAR(50),
-    is_ready_for_sale BOOLEAN DEFAULT false,
+    mfg_date DATE,
+    expiry_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

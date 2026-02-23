@@ -146,13 +146,19 @@ export function Billing() {
     setCurrentBill(null);
   };
 
-  const filteredFootwear = footwear.filter(
-    item =>
+  const filteredFootwear = footwear.filter(item => {
+    // Hide expired items from the billing POS completely
+    if (item.expiryDate && new Date(item.expiryDate) <= new Date()) {
+      return false;
+    }
+
+    return (
       item.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.size.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    );
+  });
 
   const { subtotal, gstAmount, discountAmount, finalAmount } = calculateTotals();
 

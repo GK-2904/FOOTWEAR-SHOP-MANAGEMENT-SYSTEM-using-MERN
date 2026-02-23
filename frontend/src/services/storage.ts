@@ -9,7 +9,7 @@ export const storageService = {
       id: number, brand_id: number, brand_name: string, category_name: 'Men' | 'Women' | 'Kids',
       type: string, color: string, section: string, rack: string, shelf: string,
       purchase_price: string, selling_price: string, size: string, quantity: number,
-      sub_brand?: string, article?: string, gst_percent?: string, gender?: string, is_ready_for_sale?: boolean,
+      sub_brand?: string, article?: string, gst_percent?: string, gender?: string, mfg_date?: string, expiry_date?: string,
       created_at: string, updated_at: string
     }) => ({
       id: item.id.toString(),
@@ -29,7 +29,8 @@ export const storageService = {
       quantity: item.quantity || 0,
       gstPercent: item.gst_percent ? parseFloat(item.gst_percent) : 0,
       gender: item.gender || '',
-      isReadyForSale: !!item.is_ready_for_sale,
+      mfgDate: item.mfg_date ? new Date(item.mfg_date).toISOString().split('T')[0] : undefined,
+      expiryDate: item.expiry_date ? new Date(item.expiry_date).toISOString().split('T')[0] : undefined,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
     }));
@@ -51,7 +52,8 @@ export const storageService = {
       selling_price: footwear.sellingPrice,
       gst_percent: footwear.gstPercent,
       gender: footwear.gender,
-      is_ready_for_sale: footwear.isReadyForSale,
+      mfg_date: footwear.mfgDate,
+      expiry_date: footwear.expiryDate,
       stock: [{ size: footwear.size, quantity: footwear.quantity }]
     };
     await api.post('/products', backendData);
@@ -79,7 +81,8 @@ export const storageService = {
     if (updates.sellingPrice !== undefined) backendData.selling_price = updates.sellingPrice;
     if (updates.gstPercent !== undefined) backendData.gst_percent = updates.gstPercent;
     if (updates.gender !== undefined) backendData.gender = updates.gender;
-    if (updates.isReadyForSale !== undefined) backendData.is_ready_for_sale = updates.isReadyForSale;
+    if (updates.mfgDate !== undefined) backendData.mfg_date = updates.mfgDate;
+    if (updates.expiryDate !== undefined) backendData.expiry_date = updates.expiryDate;
 
     await api.put(`/products/${id}`, backendData);
 

@@ -28,7 +28,8 @@ export function StockManagement() {
     sellingPrice: 0,
     gstPercent: 0,
     quantity: 0,
-    isReadyForSale: false,
+    mfgDate: '',
+    expiryDate: '',
   });
 
   useEffect(() => {
@@ -68,7 +69,8 @@ export function StockManagement() {
         sellingPrice: formData.sellingPrice || 0,
         gstPercent: formData.gstPercent || 0,
         quantity: formData.quantity || 0,
-        isReadyForSale: formData.isReadyForSale || false,
+        mfgDate: formData.mfgDate || undefined,
+        expiryDate: formData.expiryDate || undefined,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -110,7 +112,8 @@ export function StockManagement() {
       sellingPrice: 0,
       gstPercent: 0,
       quantity: 0,
-      isReadyForSale: false,
+      mfgDate: '',
+      expiryDate: '',
     });
     setEditingId(null);
     setShowForm(false);
@@ -217,7 +220,7 @@ export function StockManagement() {
                 value={formData.subBrand || ''}
                 onChange={(e) => setFormData({ ...formData, subBrand: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="Optional"
+                required
               />
             </div>
 
@@ -228,7 +231,7 @@ export function StockManagement() {
                 value={formData.article || ''}
                 onChange={(e) => setFormData({ ...formData, article: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="Optional"
+                required
               />
             </div>
 
@@ -345,17 +348,26 @@ export function StockManagement() {
               />
             </div>
 
-            <div className="flex items-center mt-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Manufacture Date</label>
               <input
-                type="checkbox"
-                id="readyForSale"
-                checked={!!formData.isReadyForSale}
-                onChange={(e) => setFormData({ ...formData, isReadyForSale: e.target.checked })}
-                className="h-4 w-4 text-slate-800 focus:ring-slate-800 border-gray-300 rounded"
+                type="date"
+                value={formData.mfgDate || ''}
+                onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                required
               />
-              <label htmlFor="readyForSale" className="ml-2 block text-sm text-gray-900">
-                Mark as Ready for Sale (Death/Expiry Stock)
-              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+              <input
+                type="date"
+                value={formData.expiryDate || ''}
+                onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                required
+              />
             </div>
 
             <div className="md:col-span-3 flex gap-2">
@@ -419,7 +431,10 @@ export function StockManagement() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               <AnimatePresence>
-                {filteredFootwear.map((item, index) => (
+                {filteredFootwear.filter(item => {
+                  if (!item.expiryDate) return true;
+                  return new Date(item.expiryDate) > new Date();
+                }).map((item, index) => (
                   <motion.tr
                     key={`${item.id}-${item.size}`}
                     initial={{ opacity: 0, y: 20 }}
