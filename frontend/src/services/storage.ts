@@ -8,7 +8,8 @@ export const storageService = {
     return data.map((item: {
       id: number, brand_id: number, brand_name: string, category_name: 'Men' | 'Women' | 'Kids',
       type: string, color: string, section: string, rack: string, shelf: string,
-      cost_price: string, selling_price: string, size: string, quantity: number,
+      purchase_price: string, selling_price: string, size: string, quantity: number,
+      sub_brand?: string, article?: string, gst_percent?: string, gender?: string, is_ready_for_sale?: boolean,
       created_at: string, updated_at: string
     }) => ({
       id: item.id.toString(),
@@ -21,9 +22,14 @@ export const storageService = {
       section: item.section,
       rack: item.rack,
       shelf: item.shelf,
-      costPrice: parseFloat(item.cost_price),
+      subBrand: item.sub_brand || '',
+      article: item.article || '',
+      purchasePrice: parseFloat(item.purchase_price),
       sellingPrice: parseFloat(item.selling_price),
       quantity: item.quantity || 0,
+      gstPercent: item.gst_percent ? parseFloat(item.gst_percent) : 0,
+      gender: item.gender || '',
+      isReadyForSale: !!item.is_ready_for_sale,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
     }));
@@ -39,8 +45,13 @@ export const storageService = {
       section: footwear.section,
       rack: footwear.rack,
       shelf: footwear.shelf,
-      cost_price: footwear.costPrice,
+      sub_brand: footwear.subBrand,
+      article: footwear.article,
+      purchase_price: footwear.purchasePrice,
       selling_price: footwear.sellingPrice,
+      gst_percent: footwear.gstPercent,
+      gender: footwear.gender,
+      is_ready_for_sale: footwear.isReadyForSale,
       stock: [{ size: footwear.size, quantity: footwear.quantity }]
     };
     await api.post('/products', backendData);
@@ -62,8 +73,13 @@ export const storageService = {
     if (updates.section) backendData.section = updates.section;
     if (updates.rack) backendData.rack = updates.rack;
     if (updates.shelf) backendData.shelf = updates.shelf;
-    if (updates.costPrice !== undefined) backendData.cost_price = updates.costPrice;
+    if (updates.subBrand !== undefined) backendData.sub_brand = updates.subBrand;
+    if (updates.article !== undefined) backendData.article = updates.article;
+    if (updates.purchasePrice !== undefined) backendData.purchase_price = updates.purchasePrice;
     if (updates.sellingPrice !== undefined) backendData.selling_price = updates.sellingPrice;
+    if (updates.gstPercent !== undefined) backendData.gst_percent = updates.gstPercent;
+    if (updates.gender !== undefined) backendData.gender = updates.gender;
+    if (updates.isReadyForSale !== undefined) backendData.is_ready_for_sale = updates.isReadyForSale;
 
     await api.put(`/products/${id}`, backendData);
 
@@ -108,7 +124,8 @@ export const storageService = {
     const bills = await Promise.all(data.map(async (b: {
       id: number, bill_number: string, subtotal: string, gst_percent: string,
       gst_amount: string, discount_percent: string, discount_amount: string,
-      total_amount: string, bill_date: string, created_by: number
+      total_amount: string, payment_method: string, customer_name: string,
+      bill_date: string, created_by: number
     }) => {
       // Fetch items for each bill
       const billDetails = await api.get(`/bills/${b.id}`);
@@ -116,6 +133,7 @@ export const storageService = {
         id: b.id.toString(),
         billNumber: b.bill_number,
         items: billDetails.items.map((item: {
+          id: number,
           product_id: number,
           brand_name: string,
           category_name: string,
@@ -124,8 +142,10 @@ export const storageService = {
           color: string,
           quantity: number,
           price: string,
-          total: string
+          total: string,
+          status: string
         }) => ({
+          id: item.id?.toString(),
           footwearId: item.product_id.toString(),
           brandName: item.brand_name,
           category: item.category_name,
@@ -135,6 +155,7 @@ export const storageService = {
           quantity: item.quantity,
           price: parseFloat(item.price),
           total: parseFloat(item.total),
+          status: item.status,
         })),
         subtotal: parseFloat(b.subtotal),
         gstPercent: parseFloat(b.gst_percent),
@@ -142,6 +163,8 @@ export const storageService = {
         discountPercent: parseFloat(b.discount_percent),
         discountAmount: parseFloat(b.discount_amount),
         finalAmount: parseFloat(b.total_amount),
+        paymentMethod: b.payment_method || 'Cash',
+        customerName: b.customer_name || '',
         createdAt: b.bill_date,
         createdBy: b.created_by?.toString() || '',
       };
@@ -158,6 +181,8 @@ export const storageService = {
       discount_percent: bill.discountPercent,
       discount_amount: bill.discountAmount,
       total_amount: bill.finalAmount,
+      payment_method: bill.paymentMethod || 'Cash',
+      customer_name: bill.customerName || '',
       items: bill.items.map(item => ({
         product_id: parseInt(item.footwearId),
         size: item.size,
@@ -167,6 +192,27 @@ export const storageService = {
       }))
     };
     await api.post('/bills', backendData);
+  },
+
+  async returnItem(billId: string, itemId: string): Promise<void> {
+    await api.post(`/bills/${billId}/items/${itemId}/return`, {});
+  },
+
+  // Reports
+  async getCustomerProfit(): Promise<any[]> {
+    return api.get('/reports/customer-profit');
+  },
+  async getProductProfit(): Promise<any[]> {
+    return api.get('/reports/product-profit');
+  },
+  async getMonthlyProfit(): Promise<any[]> {
+    return api.get('/reports/monthly-profit');
+  },
+  async getDailyProfit(): Promise<any[]> {
+    return api.get('/reports/daily-profit');
+  },
+  async getCategoryProfit(): Promise<any[]> {
+    return api.get('/reports/category-profit');
   },
 
   // Auth

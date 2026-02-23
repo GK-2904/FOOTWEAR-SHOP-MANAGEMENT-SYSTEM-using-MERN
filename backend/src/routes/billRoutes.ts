@@ -10,5 +10,6 @@ router.use(authenticateToken);
 router.get('/', billController.getAllBills);
 router.get('/:id', billController.getBillById);
 router.post('/', billValidation, validate, billController.createBill);
+router.post('/:id/items/:itemId/return', billController.returnItem);
 
 export default router;

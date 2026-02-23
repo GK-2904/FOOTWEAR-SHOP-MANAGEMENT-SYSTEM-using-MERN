@@ -13,6 +13,8 @@ export function Billing() {
   const [discountPercent, setDiscountPercent] = useState(0);
   const [showInvoice, setShowInvoice] = useState(false);
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
 
   useEffect(() => {
     loadFootwear();
@@ -48,6 +50,7 @@ export function Billing() {
         color: item.color,
         quantity: 1,
         price: item.sellingPrice,
+        purchasePrice: item.purchasePrice,
         total: item.sellingPrice,
       };
       setCartItems([...cartItems, newItem]);
@@ -72,6 +75,16 @@ export function Billing() {
       cartItems.map(item =>
         (item.footwearId === footwearId && item.size === size)
           ? { ...item, quantity, total: quantity * item.price }
+          : item
+      )
+    );
+  };
+
+  const updatePrice = (footwearId: string, size: string, price: number) => {
+    setCartItems(
+      cartItems.map(item =>
+        (item.footwearId === footwearId && item.size === size)
+          ? { ...item, price, total: item.quantity * price }
           : item
       )
     );
@@ -109,6 +122,8 @@ export function Billing() {
       discountPercent,
       discountAmount,
       finalAmount,
+      paymentMethod,
+      customerName,
       createdAt: new Date().toISOString(),
       createdBy: user?.name || 'Admin',
     };
@@ -117,6 +132,8 @@ export function Billing() {
     setCurrentBill(bill);
     setShowInvoice(true);
     setCartItems([]);
+    setCustomerName('');
+    setPaymentMethod('Cash');
     await loadFootwear();
   };
 
@@ -171,12 +188,16 @@ export function Billing() {
             <div>
               <p className="text-sm text-gray-600">Bill Number:</p>
               <p className="font-semibold">{currentBill.billNumber}</p>
+              {currentBill.customerName && (
+                <p className="text-sm text-gray-800 mt-1">Customer: <span className="font-medium">{currentBill.customerName}</span></p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600">Date:</p>
               <p className="font-semibold">
                 {new Date(currentBill.createdAt).toLocaleString()}
               </p>
+              <p className="text-sm text-gray-800 mt-1">Payment: <span className="font-medium">{currentBill.paymentMethod}</span></p>
             </div>
           </div>
 
@@ -236,8 +257,8 @@ export function Billing() {
           </div>
 
           <div className="mt-8 text-center text-sm text-gray-600">
-            <p>Thank you for your purchase!</p>
-            <p className="mt-2 text-lg font-semibold">Ramchandra Waghmare</p>
+            <p className="text-lg font-semibold mb-2">Thank you for your purchase!</p>
+            <p>Visit Again</p>
           </div>
         </div>
       </div>
@@ -340,7 +361,23 @@ export function Billing() {
                           +
                         </button>
                       </div>
-                      <span className="font-semibold">₹{item.total}</span>
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500">₹</span>
+                          <input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) => updatePrice(item.footwearId, item.size, parseFloat(e.target.value) || 0)}
+                            className="w-24 px-2 py-1 text-right font-semibold border border-gray-300 rounded focus:border-slate-800 focus:ring-1 focus:ring-slate-800"
+                          />
+                        </div>
+                        <span className="text-sm text-gray-600 mt-1">Total: ₹{item.total}</span>
+                        {item.purchasePrice !== undefined && (
+                          <span className="text-xs text-green-600 mt-1 font-medium bg-green-50 px-2 py-0.5 rounded">
+                            Margin: ₹{((item.price - item.purchasePrice) * item.quantity).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -353,23 +390,64 @@ export function Billing() {
 
             <div className="space-y-3 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">GST (%)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name / Mobile</label>
                 <input
-                  type="number"
-                  value={gstPercent}
-                  onChange={(e) => setGstPercent(parseFloat(e.target.value) || 0)}
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Optional"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
-                <input
-                  type="number"
-                  value={discountPercent}
-                  onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="Cash"
+                      checked={paymentMethod === 'Cash'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-4 h-4 text-slate-800 focus:ring-slate-800"
+                    />
+                    <span>Cash</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="UPI"
+                      checked={paymentMethod === 'UPI'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-4 h-4 text-slate-800 focus:ring-slate-800"
+                    />
+                    <span>UPI</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">GST (%)</label>
+                  <input
+                    type="number"
+                    value={gstPercent}
+                    onChange={(e) => setGstPercent(parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
+                  <input
+                    type="number"
+                    value={discountPercent}
+                    onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
               </div>
             </div>
 

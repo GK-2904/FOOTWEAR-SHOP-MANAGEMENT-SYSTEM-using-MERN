@@ -3,15 +3,20 @@ export interface Footwear {
   brandId: string;
   brandName: string;
   category: 'Men' | 'Women' | 'Kids';
-  type: 'Sports' | 'Casual' | 'Formal' | 'Sandals' | 'Slippers';
+  type: string;
   size: string;
   color: string;
   section: string;
   rack: string;
   shelf: string;
-  costPrice: number;
+  subBrand?: string;
+  article?: string;
+  purchasePrice: number;
   sellingPrice: number;
   quantity: number;
+  gstPercent?: number;
+  gender?: string;
+  isReadyForSale?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +28,7 @@ export interface Brand {
 }
 
 export interface BillItem {
+  id?: string;
   footwearId: string;
   brandName: string;
   category: string;
@@ -31,7 +37,9 @@ export interface BillItem {
   color: string;
   quantity: number;
   price: number;
+  purchasePrice?: number;
   total: number;
+  status?: string;
 }
 
 export interface Bill {
@@ -44,6 +52,8 @@ export interface Bill {
   discountPercent: number;
   discountAmount: number;
   finalAmount: number;
+  paymentMethod?: string;
+  customerName?: string;
   createdAt: string;
   createdBy: string;
 }

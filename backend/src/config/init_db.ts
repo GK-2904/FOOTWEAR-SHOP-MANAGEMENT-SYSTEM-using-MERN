@@ -41,13 +41,18 @@ CREATE TABLE products (
     brand_id INTEGER REFERENCES brands(id) ON DELETE CASCADE,
     category_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
+    sub_brand VARCHAR(100),
+    article VARCHAR(100),
     type VARCHAR(50), -- Sports, Casual, etc.
     color VARCHAR(50),
     section VARCHAR(50),
     rack VARCHAR(50),
     shelf VARCHAR(50),
-    cost_price DECIMAL(10, 2) NOT NULL,
+    purchase_price DECIMAL(10, 2) NOT NULL,
     selling_price DECIMAL(10, 2) NOT NULL,
+    gst_percent DECIMAL(5, 2) DEFAULT 0,
+    gender VARCHAR(50),
+    is_ready_for_sale BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -72,6 +77,8 @@ CREATE TABLE bills (
     discount_percent DECIMAL(5, 2) DEFAULT 0,
     discount_amount DECIMAL(10, 2) DEFAULT 0,
     total_amount DECIMAL(10, 2) NOT NULL,
+    payment_method VARCHAR(50) DEFAULT 'Cash',
+    customer_name VARCHAR(255),
     created_by INTEGER REFERENCES admins(id)
 );
 
@@ -83,7 +90,9 @@ CREATE TABLE bill_items (
     size VARCHAR(20) NOT NULL,
     quantity INTEGER NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    total DECIMAL(10, 2) NOT NULL
+    purchase_price DECIMAL(10, 2) DEFAULT 0,
+    total DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'sold'
 );
 
 -- Low Stock Alerts Table

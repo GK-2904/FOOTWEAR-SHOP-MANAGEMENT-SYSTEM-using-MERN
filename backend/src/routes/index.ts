@@ -5,6 +5,7 @@ import categoryRoutes from './categoryRoutes.js';
 import productRoutes from './productRoutes.js';
 import stockRoutes from './stockRoutes.js';
 import billRoutes from './billRoutes.js';
+import reportRoutes from './reportRoutes.js';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
 router.use('/stock', stockRoutes);
 router.use('/bills', billRoutes);
+router.use('/reports', reportRoutes);
 
 export default router;

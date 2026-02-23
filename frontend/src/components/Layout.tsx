@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Package, ShoppingCart, Tag, LogOut, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Tag, LogOut, ShoppingBag, AlertTriangle, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LayoutProps {
@@ -17,6 +17,8 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
     { id: 'stock', label: 'Stock Management', icon: Package },
     { id: 'billing', label: 'Billing / POS', icon: ShoppingCart },
     { id: 'brands', label: 'Brand Management', icon: Tag },
+    { id: 'ready-for-sale', label: 'Ready for Sale', icon: AlertTriangle },
+    { id: 'profit-reports', label: 'Profit Reports', icon: TrendingUp },
   ];
 
   return (
@@ -68,8 +70,8 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                     <button
                       onClick={() => onNavigate(item.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentPage === item.id
-                          ? 'bg-slate-800 text-white shadow-md transform scale-105'
-                          : 'text-gray-700 hover:bg-gray-100 hover:translate-x-1'
+                        ? 'bg-slate-800 text-white shadow-md transform scale-105'
+                        : 'text-gray-700 hover:bg-gray-100 hover:translate-x-1'
                         }`}
                     >
                       <Icon className="w-5 h-5" />

@@ -21,9 +21,14 @@ export function StockManagement() {
     section: '',
     rack: '',
     shelf: '',
-    costPrice: 0,
+    subBrand: '',
+    article: '',
+    gender: '',
+    purchasePrice: 0,
     sellingPrice: 0,
+    gstPercent: 0,
     quantity: 0,
+    isReadyForSale: false,
   });
 
   useEffect(() => {
@@ -56,9 +61,14 @@ export function StockManagement() {
         section: formData.section || '',
         rack: formData.rack || '',
         shelf: formData.shelf || '',
-        costPrice: formData.costPrice || 0,
+        subBrand: formData.subBrand || '',
+        article: formData.article || '',
+        gender: formData.gender || '',
+        purchasePrice: formData.purchasePrice || 0,
         sellingPrice: formData.sellingPrice || 0,
+        gstPercent: formData.gstPercent || 0,
         quantity: formData.quantity || 0,
+        isReadyForSale: formData.isReadyForSale || false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -93,9 +103,14 @@ export function StockManagement() {
       section: '',
       rack: '',
       shelf: '',
-      costPrice: 0,
+      subBrand: '',
+      article: '',
+      gender: '',
+      purchasePrice: 0,
       sellingPrice: 0,
+      gstPercent: 0,
       quantity: 0,
+      isReadyForSale: false,
     });
     setEditingId(null);
     setShowForm(false);
@@ -113,6 +128,8 @@ export function StockManagement() {
   const filteredFootwear = footwear.filter(item => {
     const matchesSearch =
       item.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.subBrand && item.subBrand.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.article && item.article.toLowerCase().includes(searchTerm.toLowerCase())) ||
       item.size.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${item.section}-${item.rack}-${item.shelf}`.toLowerCase().includes(searchTerm.toLowerCase());
@@ -174,7 +191,7 @@ export function StockManagement() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'Sports' | 'Casual' | 'Formal' | 'Sandals' | 'Slippers' })}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 required
               >
@@ -183,8 +200,52 @@ export function StockManagement() {
                 <option value="Formal">Formal</option>
                 <option value="Sandals">Sandals</option>
                 <option value="Slippers">Slippers</option>
+                <option value="Chappal">Chappal</option>
+                <option value="Shoes">Shoes</option>
+                <option value="Croks">Croks</option>
+                <option value="Yuva">Yuva</option>
+                <option value="Flipflop">Flipflop</option>
+                <option value="Shocks">Shocks</option>
+                <option value="Lose">Lose</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sub Brand</label>
+              <input
+                type="text"
+                value={formData.subBrand || ''}
+                onChange={(e) => setFormData({ ...formData, subBrand: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Optional"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Article</label>
+              <input
+                type="text"
+                value={formData.article || ''}
+                onChange={(e) => setFormData({ ...formData, article: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Optional"
+              />
+            </div>
+
+            {formData.category === 'Kids' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select
+                  value={formData.gender || ''}
+                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Boy">Boy</option>
+                  <option value="Girl">Girl</option>
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
@@ -242,11 +303,11 @@ export function StockManagement() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Price</label>
               <input
                 type="number"
-                value={formData.costPrice || ''}
-                onChange={(e) => setFormData({ ...formData, costPrice: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                value={formData.purchasePrice || ''}
+                onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 required
               />
@@ -272,6 +333,29 @@ export function StockManagement() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">GST (%)</label>
+              <input
+                type="number"
+                value={formData.gstPercent || ''}
+                onChange={(e) => setFormData({ ...formData, gstPercent: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+
+            <div className="flex items-center mt-6">
+              <input
+                type="checkbox"
+                id="readyForSale"
+                checked={!!formData.isReadyForSale}
+                onChange={(e) => setFormData({ ...formData, isReadyForSale: e.target.checked })}
+                className="h-4 w-4 text-slate-800 focus:ring-slate-800 border-gray-300 rounded"
+              />
+              <label htmlFor="readyForSale" className="ml-2 block text-sm text-gray-900">
+                Mark as Ready for Sale (Death/Expiry Stock)
+              </label>
             </div>
 
             <div className="md:col-span-3 flex gap-2">
@@ -327,7 +411,7 @@ export function StockManagement() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cost</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cost (Pur)</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Selling</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -355,7 +439,7 @@ export function StockManagement() {
                         {item.section}-{item.rack}-{item.shelf}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">₹{item.costPrice}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">₹{item.purchasePrice}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 font-medium">₹{item.sellingPrice}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.quantity <= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'

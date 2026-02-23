@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { storageService } from '../services/storage';
 import { DashboardStats, Footwear } from '../types';
-import { Package, Tag, AlertTriangle, DollarSign, FileText } from 'lucide-react';
+import { Package, Tag, AlertTriangle, DollarSign, FileText, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void }) {
@@ -153,6 +153,20 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalBills}</p>
             </div>
             <FileText className="w-10 h-10 text-orange-500" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          onClick={() => onNavigate?.('profit-reports')}
+          variants={item}
+          className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-100"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Profit Reports</p>
+              <p className="text-xl font-bold text-gray-900 mt-2">View</p>
+            </div>
+            <TrendingUp className="w-10 h-10 text-blue-500" />
           </div>
         </motion.div>
       </motion.div>

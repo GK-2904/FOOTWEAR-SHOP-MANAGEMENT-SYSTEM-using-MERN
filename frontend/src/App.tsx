@@ -6,6 +6,8 @@ import { Dashboard } from './components/Dashboard';
 import { StockManagement } from './components/StockManagement';
 import { Billing } from './components/Billing';
 import { BrandManagement } from './components/BrandManagement';
+import { ReadyForSale } from './components/ReadyForSale';
+import { ProfitReports } from './components/ProfitReports';
 
 import { SalesAnalytics } from './components/SalesAnalytics';
 import { BillHistory } from './components/BillHistory';
@@ -32,6 +34,10 @@ function AppContent() {
         return <Billing />;
       case 'brands':
         return <BrandManagement />;
+      case 'ready-for-sale':
+        return <ReadyForSale />;
+      case 'profit-reports':
+        return <ProfitReports />;
       case 'sales-analytics':
         return <SalesAnalytics onBack={() => setCurrentPage('dashboard')} />;
       case 'bill-history':

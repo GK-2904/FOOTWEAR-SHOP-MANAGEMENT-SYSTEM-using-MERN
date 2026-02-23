@@ -1,12 +1,27 @@
 import { Bill } from '../types';
 import { ArrowLeft, Printer } from 'lucide-react';
 
+import { storageService } from '../services/storage';
+
 interface BillDetailsProps {
     bill: Bill;
     onBack: () => void;
 }
 
 export function BillDetails({ bill, onBack }: BillDetailsProps) {
+    const handleReturn = async (itemId?: string) => {
+        if (!itemId) return;
+        if (confirm('Are you sure you want to return this item?')) {
+            try {
+                await storageService.returnItem(bill.id, itemId);
+                alert('Item returned successfully!');
+                onBack(); // Refresh by going back
+            } catch (err: any) {
+                alert('Failed to return item: ' + (err.message || 'Server error'));
+            }
+        }
+    };
+
     const printInvoice = () => {
         window.print();
     };
@@ -48,6 +63,12 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                         <p className="font-semibold">
                             {new Date(bill.createdAt).toLocaleString()}
                         </p>
+                        {bill.paymentMethod && (
+                            <p className="text-sm text-gray-800 mt-1">Payment: <span className="font-medium">{bill.paymentMethod}</span></p>
+                        )}
+                        {bill.customerName && (
+                            <p className="text-sm text-gray-800 mt-1">Customer: <span className="font-medium">{bill.customerName}</span></p>
+                        )}
                     </div>
                 </div>
 
@@ -59,6 +80,7 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                             <th className="px-4 py-2 text-center text-sm font-semibold">Qty</th>
                             <th className="px-4 py-2 text-right text-sm font-semibold">Price</th>
                             <th className="px-4 py-2 text-right text-sm font-semibold">Total</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold print:hidden">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -75,7 +97,23 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                                 <td className="px-4 py-3 text-center">{item.size}</td>
                                 <td className="px-4 py-3 text-center">{item.quantity}</td>
                                 <td className="px-4 py-3 text-right">₹{item.price}</td>
-                                <td className="px-4 py-3 text-right font-medium">₹{item.total}</td>
+                                <td className="px-4 py-3 text-right font-medium">
+                                    <span className={item.status === 'returned' ? 'line-through text-gray-400' : ''}>
+                                        ₹{item.total}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 text-center print:hidden">
+                                    {item.status === 'returned' ? (
+                                        <span className="text-sm text-red-500 font-medium bg-red-50 px-2 py-1 rounded">Returned</span>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleReturn(item.id)}
+                                            className="text-sm text-orange-600 hover:text-orange-800 font-medium"
+                                        >
+                                            Return
+                                        </button>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -107,8 +145,8 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                 </div>
 
                 <div className="mt-8 text-center text-sm text-gray-600">
-                    <p>Thank you for your purchase!</p>
-                    <p className="mt-2 text-lg font-semibold">Ramchandra Waghmare</p>
+                    <p className="text-lg font-semibold mb-2">Thank you for your purchase!</p>
+                    <p>Visit Again</p>
                 </div>
             </div>
         </div>
