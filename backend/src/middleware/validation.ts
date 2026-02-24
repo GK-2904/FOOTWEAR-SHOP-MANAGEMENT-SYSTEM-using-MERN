@@ -15,10 +15,10 @@ export const brandValidation = [
 
 export const productValidation = [
   body('name').notEmpty().withMessage('Product name is required'),
-  body('brand_id').isNumeric().withMessage('Valid Brand ID is required'),
-  body('category_id').isNumeric().withMessage('Valid Category ID is required'),
-  body('purchase_price').isNumeric().withMessage('Valid purchase price is required'),
-  body('selling_price').isNumeric().withMessage('Valid selling price is required'),
+  body('brand_id').notEmpty().withMessage('Valid Brand ID is required'),
+  body('category_id').notEmpty().withMessage('Valid Category ID is required'),
+  body('purchase_price').notEmpty().withMessage('Valid purchase price is required'),
+  body('selling_price').notEmpty().withMessage('Valid selling price is required'),
 ];
 
 export const billValidation = [
