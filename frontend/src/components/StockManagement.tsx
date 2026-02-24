@@ -50,26 +50,63 @@ export function StockManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingId && originalProduct) {
-      // Check if generic non-size fields were altered to see if we need to detach this variant
-      const isGenericChange =
-        originalProduct.brandId !== formData.brandId ||
-        originalProduct.category !== formData.category ||
-        originalProduct.type !== formData.type ||
-        originalProduct.color !== formData.color ||
-        originalProduct.section !== formData.section ||
-        originalProduct.rack !== formData.rack ||
-        originalProduct.shelf !== formData.shelf ||
-        originalProduct.subBrand !== formData.subBrand ||
-        originalProduct.article !== formData.article ||
-        originalProduct.purchasePrice !== formData.purchasePrice ||
-        originalProduct.sellingPrice !== formData.sellingPrice ||
-        originalProduct.gstPercent !== formData.gstPercent ||
-        originalProduct.gender !== formData.gender;
+    try {
+      if (editingId && originalProduct) {
+        // Check if generic non-size fields were altered to see if we need to detach this variant
+        const isGenericChange =
+          originalProduct.brandId !== formData.brandId ||
+          originalProduct.category !== formData.category ||
+          originalProduct.type !== formData.type ||
+          originalProduct.color !== formData.color ||
+          originalProduct.section !== formData.section ||
+          originalProduct.rack !== formData.rack ||
+          originalProduct.shelf !== formData.shelf ||
+          originalProduct.subBrand !== formData.subBrand ||
+          originalProduct.article !== formData.article ||
+          originalProduct.purchasePrice !== formData.purchasePrice ||
+          originalProduct.sellingPrice !== formData.sellingPrice ||
+          originalProduct.gstPercent !== formData.gstPercent ||
+          originalProduct.gender !== formData.gender;
 
-      if (isGenericChange) {
-        // If they changed the color or brand, create a NEW standalone product so old sizes aren't affected
-        const detachedFootwear: Footwear = {
+        if (isGenericChange) {
+          // If they changed the color or brand, create a NEW standalone product so old sizes aren't affected
+          const detachedFootwear: Footwear = {
+            id: Date.now().toString(),
+            brandId: formData.brandId || '',
+            brandName: formData.brandName || '',
+            category: formData.category || 'Men',
+            type: formData.type || 'Casual',
+            size: formData.size || '',
+            color: formData.color || '',
+            section: formData.section || '',
+            rack: formData.rack || '',
+            shelf: formData.shelf || '',
+            subBrand: formData.subBrand || '',
+            article: formData.article || '',
+            gender: formData.gender || '',
+            purchasePrice: formData.purchasePrice || 0,
+            sellingPrice: formData.sellingPrice || 0,
+            gstPercent: formData.gstPercent || 0,
+            quantity: formData.quantity || 0,
+            mfgDate: formData.mfgDate || undefined,
+            expiryDate: formData.expiryDate || undefined,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          // Add the new mutated clone
+          await storageService.addFootwear(detachedFootwear);
+          // And delete the old variant size from the original product mapping
+          if (originalSize) {
+            // We can't use deleteFootwear directly as it drops the whole product. Need a specific deleteStock call.
+            // By updating the old product stock to quantity 0 or deleting the size row, we sever it.
+            await storageService.deleteStockFromProduct(editingId, originalSize);
+          }
+        } else {
+          // Just updating the size/quantity, perfectly fine to patch the existing footprint natively
+          await storageService.updateFootwear(editingId, formData, originalSize || undefined);
+        }
+      } else {
+        const newFootwear: Footwear = {
           id: Date.now().toString(),
           brandId: formData.brandId || '',
           brandName: formData.brandName || '',
@@ -92,47 +129,14 @@ export function StockManagement() {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        // Add the new mutated clone
-        await storageService.addFootwear(detachedFootwear);
-        // And delete the old variant size from the original product mapping
-        if (originalSize) {
-          // We can't use deleteFootwear directly as it drops the whole product. Need a specific deleteStock call.
-          // By updating the old product stock to quantity 0 or deleting the size row, we sever it.
-          await storageService.deleteStockFromProduct(editingId, originalSize);
-        }
-      } else {
-        // Just updating the size/quantity, perfectly fine to patch the existing footprint natively
-        await storageService.updateFootwear(editingId, formData, originalSize || undefined);
+        await storageService.addFootwear(newFootwear);
       }
-    } else {
-      const newFootwear: Footwear = {
-        id: Date.now().toString(),
-        brandId: formData.brandId || '',
-        brandName: formData.brandName || '',
-        category: formData.category || 'Men',
-        type: formData.type || 'Casual',
-        size: formData.size || '',
-        color: formData.color || '',
-        section: formData.section || '',
-        rack: formData.rack || '',
-        shelf: formData.shelf || '',
-        subBrand: formData.subBrand || '',
-        article: formData.article || '',
-        gender: formData.gender || '',
-        purchasePrice: formData.purchasePrice || 0,
-        sellingPrice: formData.sellingPrice || 0,
-        gstPercent: formData.gstPercent || 0,
-        quantity: formData.quantity || 0,
-        mfgDate: formData.mfgDate || undefined,
-        expiryDate: formData.expiryDate || undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await storageService.addFootwear(newFootwear);
-    }
 
-    resetForm();
-    await loadData();
+      resetForm();
+      await loadData();
+    } catch (err: any) {
+      alert(`Validation Failed: ${err.message}`);
+    }
   };
 
   const handleEdit = (item: Footwear) => {

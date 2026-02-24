@@ -19,7 +19,13 @@ export const api = {
       window.location.href = '/';
       throw new Error('Unauthorized');
     }
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      if (errorData && errorData.errors && errorData.errors.length > 0) {
+        throw new Error(errorData.errors[0].msg);
+      }
+      throw new Error(errorData?.message || 'API Error');
+    }
     return response.json();
   },
 
@@ -37,7 +43,13 @@ export const api = {
       }
       throw new Error('Unauthorized');
     }
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      if (errorData && errorData.errors && errorData.errors.length > 0) {
+        throw new Error(errorData.errors[0].msg);
+      }
+      throw new Error(errorData?.message || 'API Error');
+    }
     return response.json();
   },
 
@@ -53,7 +65,13 @@ export const api = {
       window.location.href = '/';
       throw new Error('Unauthorized');
     }
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      if (errorData && errorData.errors && errorData.errors.length > 0) {
+        throw new Error(errorData.errors[0].msg);
+      }
+      throw new Error(errorData?.message || 'API Error');
+    }
     return response.json();
   },
 
