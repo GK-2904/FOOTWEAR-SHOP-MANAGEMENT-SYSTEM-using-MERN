@@ -59,7 +59,7 @@ export const storageService = {
     await api.post('/products', backendData);
   },
 
-  async updateFootwear(id: string, updates: Partial<Footwear>): Promise<void> {
+  async updateFootwear(id: string, updates: Partial<Footwear>, originalSize?: string): Promise<void> {
     const backendData: Record<string, unknown> = {};
 
     // Calculate name if brandName and type are available, otherwise we might need to fetch them
@@ -86,17 +86,23 @@ export const storageService = {
 
     await api.put(`/products/${id}`, backendData);
 
-    if (updates.size !== undefined && updates.quantity !== undefined) {
+    // Only hit the stock updater if size changed or we genuinely want to update the quantity
+    if (updates.size !== undefined && updates.quantity !== undefined && (originalSize || updates.quantity >= 0)) {
       await api.put('/stock/update', {
         productId: parseInt(id),
         size: updates.size,
-        quantity: updates.quantity
+        quantity: updates.quantity,
+        oldSize: originalSize
       });
     }
   },
 
   async deleteFootwear(id: string): Promise<void> {
     await api.delete(`/products/${id}`);
+  },
+
+  async deleteStockFromProduct(id: string, size: string): Promise<void> {
+    await api.delete(`/stock/${id}/${size}`);
   },
 
   // Brands
@@ -141,9 +147,15 @@ export const storageService = {
           brand_name: string,
           category_name: string,
           type: string,
+          product_type?: string,
           size: string,
           color: string,
+          sub_brand?: string,
+          article?: string,
+          gender?: string,
           quantity: number,
+          mrp?: string,
+          purchase_price?: string,
           price: string,
           total: string,
           status: string
@@ -152,11 +164,16 @@ export const storageService = {
           footwearId: item.product_id.toString(),
           brandName: item.brand_name,
           category: item.category_name,
-          type: item.type,
-          size: item.size,
-          color: item.color,
-          quantity: item.quantity,
-          price: parseFloat(item.price),
+          type: item.product_type || item.type || '',
+          size: item.size || '',
+          color: item.color || '',
+          subBrand: item.sub_brand || '',
+          article: item.article || '',
+          gender: item.gender || '',
+          quantity: item.quantity || 0,
+          mrp: parseFloat(item.mrp || item.price || '0'),
+          purchasePrice: parseFloat(item.purchase_price || '0'),
+          price: parseFloat(item.price || '0'),
           total: parseFloat(item.total),
           status: item.status,
         })),
@@ -191,6 +208,8 @@ export const storageService = {
         size: item.size,
         quantity: item.quantity,
         price: item.price,
+        mrp: item.mrp || item.price,
+        purchase_price: item.purchasePrice || 0,
         total: item.total
       }))
     };

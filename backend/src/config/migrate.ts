@@ -51,8 +51,7 @@ export const runMigrations = async () => {
 };
 
 // Run automatically if this file is executed directly
-if (process.argv[1] === new URL(import.meta.url).pathname) {
-  runMigrations()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
-}
+runMigrations().then(() => {
+  console.log('Finished migrating missing database columns');
+  process.exit(0);
+}).catch(console.error);

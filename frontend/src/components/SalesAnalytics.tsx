@@ -7,7 +7,7 @@ interface DailySales {
     date: string;
     count: number;
     total: number;
-    margin: number;
+    profit: number;
 }
 
 export function SalesAnalytics({ onBack }: { onBack: () => void }) {
@@ -17,7 +17,7 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
     });
     const [dailySales, setDailySales] = useState<DailySales[]>([]);
     const [totalPeriodSales, setTotalPeriodSales] = useState(0);
-    const [totalPeriodMargin, setTotalPeriodMargin] = useState(0);
+    const [totalPeriodProfit, setTotalPeriodProfit] = useState(0);
     const [periodBillsData, setPeriodBillsData] = useState<any[]>([]);
 
     useEffect(() => {
@@ -37,26 +37,26 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
             return billDate >= start && billDate <= end;
         });
 
-        const salesMap = new Map<string, { count: number, total: number, margin: number }>();
-        let overallMargin = 0;
+        const salesMap = new Map<string, { count: number, total: number, profit: number }>();
+        let overallProfit = 0;
 
         periodBills.forEach(bill => {
             const date = bill.createdAt.split('T')[0];
-            const current = salesMap.get(date) || { count: 0, total: 0, margin: 0 };
+            const current = salesMap.get(date) || { count: 0, total: 0, profit: 0 };
 
-            let billMargin = 0;
+            let billProfit = 0;
             bill.items.forEach(item => {
                 if (item.status !== 'returned') {
-                    billMargin += item.total - ((item.purchasePrice || 0) * item.quantity);
+                    billProfit += item.total - ((item.purchasePrice || 0) * item.quantity);
                 }
             });
 
-            overallMargin += billMargin;
+            overallProfit += billProfit;
 
             salesMap.set(date, {
                 count: current.count + 1,
                 total: current.total + bill.finalAmount,
-                margin: current.margin + billMargin
+                profit: current.profit + billProfit
             });
         });
 
@@ -64,23 +64,23 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
             date,
             count: data.count,
             total: data.total,
-            margin: data.margin
+            profit: data.profit
         })).sort((a, b) => b.date.localeCompare(a.date));
 
         setDailySales(salesArray);
         setTotalPeriodSales(periodBills.reduce((sum, bill) => sum + bill.finalAmount, 0));
-        setTotalPeriodMargin(overallMargin);
+        setTotalPeriodProfit(overallProfit);
         setPeriodBillsData(periodBills);
     };
 
     const exportToCSV = () => {
         const rows = [
-            ['Date', 'Bill Number', 'Customer Name', 'Payment Method', 'Item Brand', 'Item Type', 'Quantity', 'Purchase Price', 'Selling Price', 'Total', 'Margin', 'Status']
+            ['Date', 'Bill Number', 'Customer Name', 'Payment Method', 'Item Brand', 'Item Sub Brand', 'Item Category', 'Item Type', 'Item Article', 'Item Gender', 'Quantity', 'Purchase Price', 'Selling Price', 'Total', 'Profit', 'Status']
         ];
 
         periodBillsData.forEach(b => {
             b.items.forEach((i: any) => {
-                const margin = i.status === 'returned' ? 0 : (i.price - (i.purchasePrice || 0)) * i.quantity;
+                const profit = i.status === 'returned' ? 0 : (i.price - (i.purchasePrice || 0)) * i.quantity;
                 const formattedDate = new Date(b.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
                 rows.push([
                     `"${formattedDate}"`,
@@ -88,12 +88,16 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
                     `"${b.customerName || ''}"`,
                     b.paymentMethod || 'Cash',
                     `"${i.brandName}"`,
+                    `"${i.subBrand || ''}"`,
+                    `"${i.category || ''}"`,
                     `"${i.type}"`,
+                    `"${i.article || ''}"`,
+                    `"${i.gender || ''}"`,
                     i.quantity.toString(),
                     (i.purchasePrice || 0).toString(),
                     i.price.toString(),
                     (i.status === 'returned' ? 0 : i.total).toString(),
-                    margin.toString(),
+                    Math.abs(profit).toString(),
                     i.status || 'sold'
                 ]);
             });
@@ -111,19 +115,21 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={onBack}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors print:hidden"
-                >
-                    <ArrowLeft className="w-6 h-6 text-gray-600" />
-                </button>
-                <h1 className="text-3xl font-bold text-gray-800">Sales Analytics</h1>
-                <div className="ml-auto flex gap-2 print:hidden">
-                    <button onClick={() => window.print()} className="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors print:hidden"
+                    >
+                        <ArrowLeft className="w-6 h-6 text-gray-600" />
+                    </button>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Sales Analytics</h1>
+                </div>
+                <div className="sm:ml-auto flex flex-wrap gap-2 print:hidden w-full sm:w-auto">
+                    <button onClick={() => window.print()} className="flex-1 sm:flex-none bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 whitespace-nowrap">
                         Print PDF
                     </button>
-                    <button onClick={exportToCSV} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <button onClick={exportToCSV} className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 whitespace-nowrap">
                         Download Excel (CSV)
                     </button>
                 </div>
@@ -155,7 +161,7 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-blue-800 font-medium">Total Sales for Period</p>
@@ -165,8 +171,8 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
                     </div>
                     <div className="bg-green-50 p-4 rounded-lg border border-green-100 flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-green-800 font-medium">Est. Margin for Period</p>
-                            <p className="text-2xl font-bold text-green-900">₹{totalPeriodMargin.toLocaleString()}</p>
+                            <p className="text-sm text-green-800 font-medium">Est. Profit for Period</p>
+                            <p className="text-2xl font-bold text-green-900">₹{totalPeriodProfit.toLocaleString()}</p>
                         </div>
                         <DollarSign className="w-8 h-8 text-green-500" />
                     </div>
@@ -179,7 +185,7 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bills Count</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -198,7 +204,7 @@ export function SalesAnalytics({ onBack }: { onBack: () => void }) {
                                         ₹{day.total.toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                                        ₹{day.margin.toLocaleString()}
+                                        ₹{day.profit.toLocaleString()}
                                     </td>
                                 </tr>
                             ))}

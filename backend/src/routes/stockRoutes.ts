@@ -8,5 +8,6 @@ router.use(authenticateToken);
 
 router.put('/update', stockController.updateStock);
 router.get('/low-stock', stockController.getLowStock);
+router.delete('/:productId/:size', stockController.deleteStock);
 
 export default router;

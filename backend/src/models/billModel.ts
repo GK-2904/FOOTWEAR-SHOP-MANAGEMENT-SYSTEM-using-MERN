@@ -10,10 +10,13 @@ export const BillModel = {
   async getById(id: number) {
     const billRes = await query('SELECT * FROM bills WHERE id = $1', [id]);
     const itemsRes = await query(`
-      SELECT bi.*, p.name as product_name, b.name as brand_name
+      SELECT bi.*, p.name as product_name, b.name as brand_name, 
+             p.sub_brand as sub_brand, p.article as article, p.gender as gender,
+             p.type as product_type, c.name as category_name
       FROM bill_items bi
       JOIN products p ON bi.product_id = p.id
       JOIN brands b ON p.brand_id = b.id
+      JOIN categories c ON p.category_id = c.id
       WHERE bi.bill_id = $1
     `, [id]);
 
@@ -46,13 +49,13 @@ export const BillModel = {
       const billId = billRes.rows[0].id;
 
       for (const item of items) {
-        const { product_id, size, quantity, price, purchase_price, total } = item;
+        const { product_id, size, quantity, price, mrp, purchase_price, total } = item;
 
         // Insert bill item
         await client.query(`
-          INSERT INTO bill_items (bill_id, product_id, size, quantity, price, purchase_price, total)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
-        `, [billId, product_id, size, quantity, price, purchase_price || 0, total]);
+          INSERT INTO bill_items (bill_id, product_id, size, quantity, price, mrp, purchase_price, total)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [billId, product_id, size, quantity, price, mrp || 0, purchase_price || 0, total]);
 
         // Deduct from stock
         await client.query(`

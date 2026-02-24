@@ -55,6 +55,8 @@ export const ProductModel = {
   },
 
   async delete(id: number) {
+    // Delete associated stock first to prevent foreign key constraint errors
+    await query('DELETE FROM stock WHERE product_id = $1', [id]);
     const res = await query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
     return res.rows[0];
   }

@@ -9,7 +9,6 @@ export function Billing() {
   const [footwear, setFootwear] = useState<Footwear[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [cartItems, setCartItems] = useState<BillItem[]>([]);
-  const [gstPercent, setGstPercent] = useState(5);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [showInvoice, setShowInvoice] = useState(false);
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
@@ -48,9 +47,14 @@ export function Billing() {
         type: item.type,
         size: item.size,
         color: item.color,
+        subBrand: item.subBrand,
+        article: item.article,
+        gender: item.gender,
         quantity: 1,
         price: item.sellingPrice,
+        mrp: item.sellingPrice,
         purchasePrice: item.purchasePrice,
+        gstPercent: item.gstPercent || 0,
         total: item.sellingPrice,
       };
       setCartItems([...cartItems, newItem]);
@@ -96,7 +100,7 @@ export function Billing() {
 
   const calculateTotals = () => {
     const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
-    const gstAmount = (subtotal * gstPercent) / 100;
+    const gstAmount = cartItems.reduce((sum, item) => sum + (item.total * (item.gstPercent || 0)) / 100, 0);
     const discountAmount = (subtotal * discountPercent) / 100;
     const finalAmount = subtotal + gstAmount - discountAmount;
 
@@ -117,7 +121,7 @@ export function Billing() {
       billNumber,
       items: cartItems,
       subtotal,
-      gstPercent,
+      gstPercent: 0,
       gstAmount,
       discountPercent,
       discountAmount,
@@ -207,35 +211,39 @@ export function Billing() {
             </div>
           </div>
 
-          <table className="w-full mb-6">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 text-left text-sm font-semibold">Item</th>
-                <th className="px-4 py-2 text-center text-sm font-semibold">Size</th>
-                <th className="px-4 py-2 text-center text-sm font-semibold">Qty</th>
-                <th className="px-4 py-2 text-right text-sm font-semibold">Price</th>
-                <th className="px-4 py-2 text-right text-sm font-semibold">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentBill.items.map((item, index) => (
-                <tr key={index} className="border-b">
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="font-medium">{item.brandName}</p>
-                      <p className="text-sm text-gray-600">
-                        {item.category} - {item.type} - {item.color}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">{item.size}</td>
-                  <td className="px-4 py-3 text-center">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right">₹{item.price}</td>
-                  <td className="px-4 py-3 text-right font-medium">₹{item.total}</td>
+          <div className="overflow-x-auto w-full mb-6">
+            <table className="w-full min-w-[600px]">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left text-sm font-semibold">Item</th>
+                  <th className="px-4 py-2 text-center text-sm font-semibold">Size</th>
+                  <th className="px-4 py-2 text-center text-sm font-semibold">Qty</th>
+                  <th className="px-4 py-2 text-right text-sm font-semibold">MRP</th>
+                  <th className="px-4 py-2 text-right text-sm font-semibold">Price</th>
+                  <th className="px-4 py-2 text-right text-sm font-semibold">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentBill.items.map((item, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="font-medium">{item.brandName}</p>
+                        <p className="text-sm text-gray-600">
+                          {item.category} - {item.type} - {item.color}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">{item.size}</td>
+                    <td className="px-4 py-3 text-center">{item.quantity}</td>
+                    <td className="px-4 py-3 text-right">₹{item.mrp || item.price}</td>
+                    <td className="px-4 py-3 text-right">₹{item.price}</td>
+                    <td className="px-4 py-3 text-right font-medium">₹{item.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className="border-t-2 border-gray-300 pt-4">
             <div className="flex justify-end">
@@ -245,7 +253,7 @@ export function Billing() {
                   <span className="font-medium">₹{currentBill.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">GST ({currentBill.gstPercent}%):</span>
+                  <span className="text-gray-600">Total GST:</span>
                   <span className="font-medium">₹{currentBill.gstAmount.toFixed(2)}</span>
                 </div>
                 {currentBill.discountPercent > 0 && (
@@ -380,7 +388,7 @@ export function Billing() {
                         <span className="text-sm text-gray-600 mt-1">Total: ₹{item.total}</span>
                         {item.purchasePrice !== undefined && (
                           <span className="text-xs text-green-600 mt-1 font-medium bg-green-50 px-2 py-0.5 rounded">
-                            Margin: ₹{((item.price - item.purchasePrice) * item.quantity).toFixed(2)}
+                            ₹{((item.price - item.purchasePrice) * item.quantity).toFixed(2)} ({(((item.price - item.purchasePrice) / item.purchasePrice) * 100).toFixed(1)}%)
                           </span>
                         )}
                       </div>
@@ -434,17 +442,7 @@ export function Billing() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">GST (%)</label>
-                  <input
-                    type="number"
-                    value={gstPercent}
-                    onChange={(e) => setGstPercent(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  />
-                </div>
-
+              <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
                   <input
@@ -463,7 +461,7 @@ export function Billing() {
                 <span>₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>GST ({gstPercent}%):</span>
+                <span>Total GST:</span>
                 <span>₹{gstAmount.toFixed(2)}</span>
               </div>
               {discountPercent > 0 && (

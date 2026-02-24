@@ -78,6 +78,7 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                             <th className="px-4 py-2 text-left text-sm font-semibold">Item</th>
                             <th className="px-4 py-2 text-center text-sm font-semibold">Size</th>
                             <th className="px-4 py-2 text-center text-sm font-semibold">Qty</th>
+                            <th className="px-4 py-2 text-right text-sm font-semibold">MRP</th>
                             <th className="px-4 py-2 text-right text-sm font-semibold">Price</th>
                             <th className="px-4 py-2 text-right text-sm font-semibold">Total</th>
                             <th className="px-4 py-2 text-center text-sm font-semibold print:hidden">Action</th>
@@ -96,6 +97,7 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                                 </td>
                                 <td className="px-4 py-3 text-center">{item.size}</td>
                                 <td className="px-4 py-3 text-center">{item.quantity}</td>
+                                <td className="px-4 py-3 text-right">₹{item.mrp || item.price}</td>
                                 <td className="px-4 py-3 text-right">₹{item.price}</td>
                                 <td className="px-4 py-3 text-right font-medium">
                                     <span className={item.status === 'returned' ? 'line-through text-gray-400' : ''}>
@@ -127,7 +129,7 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                                 <span className="font-medium">₹{bill.subtotal.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-gray-600">GST ({bill.gstPercent}%):</span>
+                                <span className="text-gray-600">Total GST:</span>
                                 <span className="font-medium">₹{bill.gstAmount.toFixed(2)}</span>
                             </div>
                             {bill.discountPercent > 0 && (

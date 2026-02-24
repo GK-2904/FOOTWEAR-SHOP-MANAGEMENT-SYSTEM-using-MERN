@@ -29,6 +29,25 @@ export const StockModel = {
     return res.rows[0];
   },
 
+  async updateSpecificStock(productId: number, oldSize: string, newSize: string, quantity: number) {
+    if (oldSize && oldSize !== newSize) {
+      const check = await query('SELECT * FROM stock WHERE product_id = $1 AND size = $2', [productId, newSize]);
+      if (check.rows.length > 0) {
+        await query('DELETE FROM stock WHERE product_id = $1 AND size = $2', [productId, oldSize]);
+        return await this.setStock(productId, newSize, quantity);
+      } else {
+        const res = await query(`
+          UPDATE stock
+          SET size = $3, quantity = $4
+          WHERE product_id = $1 AND size = $2
+          RETURNING *
+        `, [productId, oldSize, newSize, quantity]);
+        return res.rows[0];
+      }
+    }
+    return await this.setStock(productId, newSize, quantity);
+  },
+
   async getLowStock(threshold: number = 5) {
     const res = await query(`
       SELECT s.*, p.name as product_name, b.name as brand_name
@@ -38,5 +57,10 @@ export const StockModel = {
       WHERE s.quantity <= $1
     `, [threshold]);
     return res.rows;
+  },
+
+  async deleteStock(productId: number, size: string) {
+    const res = await query('DELETE FROM stock WHERE product_id = $1 AND size = $2 RETURNING *', [productId, size]);
+    return res.rows[0];
   }
 };

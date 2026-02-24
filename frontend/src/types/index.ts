@@ -36,9 +36,14 @@ export interface BillItem {
   type: string;
   size: string;
   color: string;
+  subBrand?: string;
+  article?: string;
+  gender?: string;
   quantity: number;
   price: number;
+  mrp?: number;
   purchasePrice?: number;
+  gstPercent?: number;
   total: number;
   status?: string;
 }

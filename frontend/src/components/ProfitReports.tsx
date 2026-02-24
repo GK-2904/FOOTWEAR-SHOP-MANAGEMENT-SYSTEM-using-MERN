@@ -50,7 +50,9 @@ export function ProfitReports() {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {data.map((row, i) => (
                                 <tr key={i} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.date}</td>
+                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                        {new Date(row.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                                    </td>
                                     <td className="px-4 py-3 text-sm text-gray-600">{row.total_bills}</td>
                                     <td className="px-4 py-3 text-sm text-gray-600">₹{parseFloat(row.total_revenue).toFixed(2)}</td>
                                     <td className="px-4 py-3 text-sm text-green-600 font-medium">₹{parseFloat(row.total_profit).toFixed(2)}</td>
@@ -73,7 +75,9 @@ export function ProfitReports() {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {data.map((row, i) => (
                                 <tr key={i} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.month}</td>
+                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                        {new Date(`${row.month}-01`).toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                                    </td>
                                     <td className="px-4 py-3 text-sm text-gray-600">{row.total_bills}</td>
                                     <td className="px-4 py-3 text-sm text-gray-600">₹{parseFloat(row.total_revenue).toFixed(2)}</td>
                                     <td className="px-4 py-3 text-sm text-green-600 font-medium">₹{parseFloat(row.total_profit).toFixed(2)}</td>

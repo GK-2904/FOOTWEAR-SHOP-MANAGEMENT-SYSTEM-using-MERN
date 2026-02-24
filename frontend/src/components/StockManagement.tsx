@@ -9,6 +9,8 @@ export function StockManagement() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [originalSize, setOriginalSize] = useState<string | null>(null);
+  const [originalProduct, setOriginalProduct] = useState<Partial<Footwear> | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [formData, setFormData] = useState<Partial<Footwear>>({
@@ -48,8 +50,60 @@ export function StockManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingId) {
-      await storageService.updateFootwear(editingId, formData);
+    if (editingId && originalProduct) {
+      // Check if generic non-size fields were altered to see if we need to detach this variant
+      const isGenericChange =
+        originalProduct.brandId !== formData.brandId ||
+        originalProduct.category !== formData.category ||
+        originalProduct.type !== formData.type ||
+        originalProduct.color !== formData.color ||
+        originalProduct.section !== formData.section ||
+        originalProduct.rack !== formData.rack ||
+        originalProduct.shelf !== formData.shelf ||
+        originalProduct.subBrand !== formData.subBrand ||
+        originalProduct.article !== formData.article ||
+        originalProduct.purchasePrice !== formData.purchasePrice ||
+        originalProduct.sellingPrice !== formData.sellingPrice ||
+        originalProduct.gstPercent !== formData.gstPercent ||
+        originalProduct.gender !== formData.gender;
+
+      if (isGenericChange) {
+        // If they changed the color or brand, create a NEW standalone product so old sizes aren't affected
+        const detachedFootwear: Footwear = {
+          id: Date.now().toString(),
+          brandId: formData.brandId || '',
+          brandName: formData.brandName || '',
+          category: formData.category || 'Men',
+          type: formData.type || 'Casual',
+          size: formData.size || '',
+          color: formData.color || '',
+          section: formData.section || '',
+          rack: formData.rack || '',
+          shelf: formData.shelf || '',
+          subBrand: formData.subBrand || '',
+          article: formData.article || '',
+          gender: formData.gender || '',
+          purchasePrice: formData.purchasePrice || 0,
+          sellingPrice: formData.sellingPrice || 0,
+          gstPercent: formData.gstPercent || 0,
+          quantity: formData.quantity || 0,
+          mfgDate: formData.mfgDate || undefined,
+          expiryDate: formData.expiryDate || undefined,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        // Add the new mutated clone
+        await storageService.addFootwear(detachedFootwear);
+        // And delete the old variant size from the original product mapping
+        if (originalSize) {
+          // We can't use deleteFootwear directly as it drops the whole product. Need a specific deleteStock call.
+          // By updating the old product stock to quantity 0 or deleting the size row, we sever it.
+          await storageService.deleteStockFromProduct(editingId, originalSize);
+        }
+      } else {
+        // Just updating the size/quantity, perfectly fine to patch the existing footprint natively
+        await storageService.updateFootwear(editingId, formData, originalSize || undefined);
+      }
     } else {
       const newFootwear: Footwear = {
         id: Date.now().toString(),
@@ -84,6 +138,8 @@ export function StockManagement() {
   const handleEdit = (item: Footwear) => {
     setFormData(item);
     setEditingId(item.id);
+    setOriginalSize(item.size);
+    setOriginalProduct(item);
     setShowForm(true);
   };
 
@@ -116,6 +172,8 @@ export function StockManagement() {
       expiryDate: '',
     });
     setEditingId(null);
+    setOriginalSize(null);
+    setOriginalProduct(null);
     setShowForm(false);
   };
 
@@ -144,11 +202,11 @@ export function StockManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-800">Stock Management</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 flex items-center gap-2"
+          className="w-full sm:w-auto bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Add Stock
@@ -390,7 +448,7 @@ export function StockManagement() {
       )}
 
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <input
@@ -404,7 +462,7 @@ export function StockManagement() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg"
           >
             <option value="">All Categories</option>
             <option value="Men">Men</option>

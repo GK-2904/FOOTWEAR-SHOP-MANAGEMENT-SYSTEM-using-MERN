@@ -32,8 +32,9 @@ export const getDailyProfit = async (req: Request, res: Response) => {
     try {
         const data = await ReportModel.getDailyProfit();
         res.json(data);
-    } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+    } catch (err: any) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error', details: err.message || err });
     }
 };
 
