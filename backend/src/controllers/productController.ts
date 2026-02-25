@@ -33,6 +33,7 @@ export const createProduct = async (req: Request, res: Response) => {
     }
     res.status(201).json(product);
   } catch (err) {
+    console.error('Error in createProduct:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
