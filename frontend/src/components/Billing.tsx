@@ -151,11 +151,6 @@ export function Billing() {
   };
 
   const filteredFootwear = footwear.filter(item => {
-    // Hide expired items from the billing POS completely
-    if (item.expiryDate && new Date(item.expiryDate) <= new Date()) {
-      return false;
-    }
-
     return (
       item.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.size.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -279,9 +274,13 @@ export function Billing() {
     );
   }
 
+
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Billing / POS</h1>
+      <div className="flex justify-between items-center sm:flex-row flex-col gap-4">
+        <h1 className="text-3xl font-bold text-gray-800">Billing / POS</h1>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

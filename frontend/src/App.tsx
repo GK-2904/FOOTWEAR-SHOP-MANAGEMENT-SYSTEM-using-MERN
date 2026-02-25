@@ -11,6 +11,7 @@ import { ProfitReports } from './components/ProfitReports';
 
 import { SalesAnalytics } from './components/SalesAnalytics';
 import { BillHistory } from './components/BillHistory';
+import { DashboardReport } from './components/DashboardReport';
 
 import { Bill } from './types';
 import { BillDetails } from './components/BillDetails';
@@ -38,6 +39,14 @@ function AppContent() {
         return <ReadyForSale />;
       case 'profit-reports':
         return <ProfitReports />;
+      case 'brands-report':
+        return <DashboardReport type="brands" onBack={() => setCurrentPage('dashboard')} />;
+      case 'total-stock-report':
+        return <DashboardReport type="total-stock" onBack={() => setCurrentPage('dashboard')} />;
+      case 'low-stock-report':
+        return <DashboardReport type="low-stock" onBack={() => setCurrentPage('dashboard')} />;
+      case 'today-sales-report':
+        return <DashboardReport type="today-sales" onBack={() => setCurrentPage('dashboard')} />;
       case 'sales-analytics':
         return <SalesAnalytics onBack={() => setCurrentPage('dashboard')} />;
       case 'bill-history':

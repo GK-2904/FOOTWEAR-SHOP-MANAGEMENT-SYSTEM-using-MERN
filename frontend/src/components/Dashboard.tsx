@@ -88,7 +88,11 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
       >
-        <motion.div variants={item} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+        <motion.div
+          onClick={() => onNavigate?.('total-stock-report')}
+          variants={item}
+          className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Stock</p>
@@ -98,7 +102,11 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
           </div>
         </motion.div>
 
-        <motion.div variants={item} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+        <motion.div
+          onClick={() => onNavigate?.('brands-report')}
+          variants={item}
+          className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Brands</p>
@@ -108,7 +116,11 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
           </div>
         </motion.div>
 
-        <motion.div variants={item} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+        <motion.div
+          onClick={() => onNavigate?.('low-stock-report')}
+          variants={item}
+          className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Low Stock</p>
@@ -118,7 +130,11 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
           </div>
         </motion.div>
 
-        <motion.div variants={item} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+        <motion.div
+          onClick={() => onNavigate?.('today-sales-report')}
+          variants={item}
+          className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Today Sales</p>

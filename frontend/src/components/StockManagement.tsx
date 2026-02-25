@@ -357,13 +357,13 @@ export function StockManagement() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Shelf (Optional)</label>
               <input
                 type="text"
                 value={formData.shelf}
                 onChange={(e) => setFormData({ ...formData, shelf: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                required
+                placeholder="Optional"
               />
             </div>
 
@@ -401,34 +401,35 @@ export function StockManagement() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">GST (%)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">GST (%) (Optional)</label>
               <input
                 type="number"
                 value={formData.gstPercent || ''}
                 onChange={(e) => setFormData({ ...formData, gstPercent: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Optional"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Manufacture Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Manufacture Date (Optional)</label>
               <input
                 type="date"
                 value={formData.mfgDate || ''}
                 onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                required
+                placeholder="Optional"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date (Optional)</label>
               <input
                 type="date"
                 value={formData.expiryDate || ''}
                 onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                required
+                placeholder="Optional"
               />
             </div>
 
