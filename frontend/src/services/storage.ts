@@ -220,6 +220,21 @@ export const storageService = {
     await api.post(`/bills/${billId}/items/${itemId}/return`, {});
   },
 
+  async replaceItem(billId: string, itemId: string, newItem: BillItem): Promise<void> {
+    const backendData = {
+      newItem: {
+        product_id: parseInt(newItem.footwearId),
+        size: newItem.size,
+        quantity: newItem.quantity,
+        price: newItem.price,
+        mrp: newItem.mrp || newItem.price,
+        purchase_price: newItem.purchasePrice || 0,
+        total: newItem.total
+      }
+    };
+    await api.post(`/bills/${billId}/items/${itemId}/replace`, backendData);
+  },
+
   // Reports
   async getCustomerProfit(): Promise<any[]> {
     return api.get('/reports/customer-profit');

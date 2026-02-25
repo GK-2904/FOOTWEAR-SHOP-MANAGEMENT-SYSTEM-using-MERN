@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Bill } from '../types';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { ArrowLeft, Printer, X, Search } from 'lucide-react';
 
 import { storageService } from '../services/storage';
 
@@ -9,6 +10,20 @@ interface BillDetailsProps {
 }
 
 export function BillDetails({ bill, onBack }: BillDetailsProps) {
+    const [showReplaceModal, setShowReplaceModal] = useState(false);
+    const [currentItemToReplace, setCurrentItemToReplace] = useState<string | null>(null);
+    const [footwear, setFootwear] = useState<any[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        loadFootwear();
+    }, []);
+
+    const loadFootwear = async () => {
+        const data = await storageService.getFootwear();
+        setFootwear(data.filter((f: any) => f.quantity > 0));
+    };
+
     const handleReturn = async (itemId?: string) => {
         if (!itemId) return;
         if (confirm('Are you sure you want to return this item?')) {
@@ -22,9 +37,52 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
         }
     };
 
+    const handleReplaceClick = (itemId: string) => {
+        setCurrentItemToReplace(itemId);
+        setShowReplaceModal(true);
+    };
+
+    const handleReplaceConfirm = async (newItem: any) => {
+        if (!currentItemToReplace) return;
+
+        try {
+            await storageService.replaceItem(bill.id, currentItemToReplace, {
+                footwearId: newItem.id.toString(),
+                brandName: newItem.brandName,
+                category: newItem.category,
+                type: newItem.type,
+                size: newItem.size,
+                color: newItem.color,
+                subBrand: newItem.subBrand,
+                article: newItem.article,
+                gender: newItem.gender,
+                quantity: 1, // Only replacing 1 qty at a time for simplicity
+                price: newItem.sellingPrice,
+                mrp: newItem.sellingPrice,
+                purchasePrice: newItem.purchasePrice,
+                gstPercent: newItem.gstPercent || 0,
+                total: newItem.sellingPrice
+            });
+            alert('Item replaced successfully!');
+            setShowReplaceModal(false);
+            onBack();
+        } catch (err: any) {
+            alert('Failed to replace item: ' + (err.message || 'Server error'));
+        }
+    };
+
     const printInvoice = () => {
         window.print();
     };
+
+    const filteredFootwear = footwear.filter(item => {
+        return (
+            item.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.size.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.type.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    });
 
     return (
         <div className="space-y-6">
@@ -108,12 +166,21 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                                     {item.status === 'returned' ? (
                                         <span className="text-sm text-red-500 font-medium bg-red-50 px-2 py-1 rounded">Returned</span>
                                     ) : (
-                                        <button
-                                            onClick={() => handleReturn(item.id)}
-                                            className="text-sm text-orange-600 hover:text-orange-800 font-medium"
-                                        >
-                                            Return
-                                        </button>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => handleReturn(item.id)}
+                                                className="text-sm text-orange-600 hover:text-orange-800 font-medium"
+                                            >
+                                                Return
+                                            </button>
+                                            <span className="text-gray-300">|</span>
+                                            <button
+                                                onClick={() => handleReplaceClick(item.id!)}
+                                                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                            >
+                                                Replace
+                                            </button>
+                                        </div>
                                     )}
                                 </td>
                             </tr>
@@ -151,6 +218,73 @@ export function BillDetails({ bill, onBack }: BillDetailsProps) {
                     <p>Visit Again</p>
                 </div>
             </div>
+
+            {/* Replace Item Modal */}
+            {showReplaceModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                        <div className="flex justify-between items-center p-6 border-b">
+                            <h2 className="text-2xl font-bold text-gray-800">Select Replacement Item</h2>
+                            <button
+                                onClick={() => setShowReplaceModal(false)}
+                                className="text-gray-500 hover:text-gray-700 transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 flex-1 overflow-auto">
+                            <div className="relative mb-6">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                <input
+                                    type="text"
+                                    placeholder="Search replacement footwear by brand, size, color, or type..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {filteredFootwear.map(item => (
+                                    <div
+                                        key={item.id}
+                                        className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer border-gray-200"
+                                        onClick={() => handleReplaceConfirm(item)}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h3 className="font-semibold text-gray-800">{item.brandName}</h3>
+                                                <p className="text-sm text-gray-600">{item.article}</p>
+                                            </div>
+                                            <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
+                                                Size {item.size}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mt-3">
+                                            <p>Color: {item.color}</p>
+                                            <p>Type: {item.type}</p>
+                                            <p>Category: {item.category}</p>
+                                            <p className={`font-semibold ${item.quantity <= 5 ? 'text-red-500' : 'text-green-600'}`}>
+                                                Stock: {item.quantity}
+                                            </p>
+                                        </div>
+                                        <div className="mt-3 pt-3 border-t flex justify-between items-center">
+                                            <span className="text-gray-500 line-through text-sm">₹{item.mrp}</span>
+                                            <span className="font-bold text-gray-900 text-lg">₹{item.sellingPrice}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                                {filteredFootwear.length === 0 && (
+                                    <div className="col-span-full text-center py-8 text-gray-500">
+                                        No footprint found matching your search.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

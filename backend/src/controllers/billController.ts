@@ -44,3 +44,19 @@ export const returnItem = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const replaceItem = async (req: Request, res: Response) => {
+  try {
+    const { newItem } = req.body;
+    if (!newItem) return res.status(400).json({ message: 'New item data is required' });
+
+    const result = await BillModel.replaceItem(parseInt(req.params.itemId as string), newItem);
+    res.json(result);
+  } catch (err: any) {
+    if (err.message === 'Item not found or already returned' || err.message === 'Insufficient stock for replacement item') {
+      return res.status(400).json({ message: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
